@@ -15,6 +15,7 @@ export type JobResponse =
 export interface Item {
   id: string
   file: File
+  previewUrl: string
   status: 'queued' | 'working' | 'done' | 'error'
   blob?: Blob
   url?: string
