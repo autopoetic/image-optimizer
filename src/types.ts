@@ -5,11 +5,22 @@ export interface JobRequest {
   file: File
   format: OutFormat
   quality: number
-  maxWidth: number
+  width: number // 0 = otomatis
+  height: number // 0 = otomatis
+  lockRatio: boolean
+  allowUpscale: boolean
 }
 
 export type JobResponse =
-  | { id: string; ok: true; blob: Blob; width: number; height: number }
+  | {
+      id: string
+      ok: true
+      blob: Blob
+      width: number
+      height: number
+      origWidth: number
+      origHeight: number
+    }
   | { id: string; ok: false; error: string }
 
 export interface Item {
@@ -21,4 +32,8 @@ export interface Item {
   url?: string
   outName?: string
   error?: string
+  origW?: number
+  origH?: number
+  outW?: number
+  outH?: number
 }
