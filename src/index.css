@@ -8,5 +8,9 @@ body { margin: 0; font-family: system-ui, sans-serif; background: #fafafa; color
 button { padding: 8px 16px; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff; cursor: pointer; }
 button:disabled { opacity: .4; cursor: not-allowed; }
 table { width: 100%; border-collapse: collapse; background: #fff; }
-th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-size: 14px; word-break: break-all; }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-size: 14px; word-break: break-all; vertical-align: middle; }
 .err { color: #b91c1c; }
+.thumbs { display: flex; gap: 8px; }
+.thumbs figure { margin: 0; text-align: center; }
+.thumbs img { display: block; width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; background: #eee; }
+.thumbs figcaption { font-size: 11px; color: #666; margin-top: 2px; }
