@@ -22,3 +22,5 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-siz
 .thumbs figure { margin: 0; text-align: center; }
 .thumbs img { display: block; width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; background: #eee; }
 .thumbs figcaption { font-size: 11px; color: #666; margin-top: 2px; }
+.brand { display: flex; align-items: center; margin-bottom: 24px; }
+.logo { height: 48px; width: auto; max-width: 100%; border-radius: 8px; display: block; }
