@@ -21,7 +21,7 @@ const toNum = (v: string) => Math.max(0, Math.min(12000, Math.floor(Number(v) ||
 
 export default function App() {
   const [items, setItems] = useState<Item[]>([])
-  const [format, setFormat] = useState<OutFormat>('image/webp')
+  const [format, setFormat] = useState<OutFormat>('image/jpeg')
   const [quality, setQuality] = useState(80)
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
@@ -229,8 +229,8 @@ export default function App() {
         <label>
           Format{' '}
           <select value={format} onChange={(e) => setFormat(e.target.value as OutFormat)}>
-            <option value="image/webp">WebP</option>
             <option value="image/jpeg">JPEG</option>
+            <option value="image/webp">WebP</option>
           </select>
         </label>
         <label>
