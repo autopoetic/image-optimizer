@@ -1,14 +1,22 @@
 * { box-sizing: border-box; }
 body { margin: 0; font-family: system-ui, sans-serif; background: #fafafa; color: #1a1a1a; }
-.wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+.wrap { max-width: 960px; margin: 0 auto; padding: 40px 20px; }
 .drop { border: 2px dashed #999; border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; background: #fff; }
 .drop.drag { border-color: #2563eb; background: #eff6ff; }
 .muted { color: #666; font-size: 14px; margin-top: 6px; }
+.panel { margin: 20px 0 0; padding: 14px 16px; border: 1px solid #ddd; border-radius: 12px; background: #fff; }
+.panel legend { padding: 0 6px; font-weight: 600; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 8px 0; }
+.times { color: #666; }
+.check { display: flex; align-items: center; gap: 6px; }
+input[type="number"] { width: 110px; padding: 6px 8px; border: 1px solid #bbb; border-radius: 6px; }
 .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin: 20px 0; }
 button { padding: 8px 16px; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff; cursor: pointer; }
+button.ghost { background: #fff; color: #111; padding: 5px 10px; font-size: 13px; }
 button:disabled { opacity: .4; cursor: not-allowed; }
+.scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; background: #fff; }
-th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-size: 14px; word-break: break-all; vertical-align: middle; }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-size: 14px; word-break: break-word; vertical-align: middle; }
 .err { color: #b91c1c; }
 .thumbs { display: flex; gap: 8px; }
 .thumbs figure { margin: 0; text-align: center; }
