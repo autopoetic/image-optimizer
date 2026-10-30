@@ -134,7 +134,17 @@ export default function App() {
 
   return (
     <main className="wrap">
+      <header className="brand">
+        <img
+          className="logo"
+          src="/KabarViralOnline.jpeg"
+          alt="Kabar Viral Online"
+          height={48}
+        />
+      </header>
       <h1>Image Optimizer</h1>
+    
+      
       <p>Kompres dan ubah ukuran gambar langsung di browser. Gambar tidak dikirim ke server mana pun.</p>
 
       <div
