@@ -33,19 +33,22 @@ export default function App() {
 
   function addFiles(list: FileList | null) {
     if (!list) return
-    const accepted = Array.from(list).filter(
-      (f) => ALLOWED.includes(f.type) && f.size <= MAX_BYTES,
-    )
-    setItems((prev) =>
-      [
-        ...prev,
-        ...accepted.map((file) => ({
-          id: crypto.randomUUID(),
-          file,
-          status: 'queued' as const,
-        })),
-      ].slice(0, MAX_FILES),
-    )
+    const room = MAX_FILES - items.length
+    if (room <= 0) return
+    const accepted = Array.from(list)
+      .filter((f) => ALLOWED.includes(f.type) && f.size <= MAX_BYTES)
+      .slice(0, room)
+    const added: Item[] = accepted.map((file) => {
+      const previewUrl = URL.createObjectURL(file)
+      urlsRef.current.push(previewUrl)
+      return {
+        id: crypto.randomUUID(),
+        file,
+        previewUrl,
+        status: 'queued' as const,
+      }
+    })
+    setItems((prev) => [...prev, ...added])
   }
 
   function clearAll() {
@@ -170,6 +173,7 @@ export default function App() {
         <table>
           <thead>
             <tr>
+              <th>Pratinjau</th>
               <th>File</th>
               <th>Asli</th>
               <th>Hasil</th>
@@ -180,6 +184,20 @@ export default function App() {
           <tbody>
             {items.map((it) => (
               <tr key={it.id}>
+                <td>
+                  <div className="thumbs">
+                    <figure>
+                      <img src={it.previewUrl} alt={`Asli: ${it.file.name}`} />
+                      <figcaption>Asli</figcaption>
+                    </figure>
+                    {it.status === 'done' && it.url && (
+                      <figure>
+                        <img src={it.url} alt={`Hasil: ${it.outName ?? it.file.name}`} />
+                        <figcaption>Hasil</figcaption>
+                      </figure>
+                    )}
+                  </div>
+                </td>
                 <td>{it.file.name}</td>
                 <td>{fmtSize(it.file.size)}</td>
                 <td>
