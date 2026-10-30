@@ -135,12 +135,19 @@ export default function App() {
   return (
     <main className="wrap">
       <header className="brand">
-        <img
-          className="logo"
-          src="/KabarViralOnline.jpeg"
-          alt="Kabar Viral Online"
-          height={48}
-        />
+        <a
+          href="https://kabarviral.online"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Kunjungi Kabar Viral Online"
+        >
+          <img
+            className="logo"
+            src="/KabarViralOnline.jpeg"
+            alt="Kabar Viral Online"
+            height={48}
+          />
+        </a>
       </header>
       <h1>Image Optimizer</h1>
     
