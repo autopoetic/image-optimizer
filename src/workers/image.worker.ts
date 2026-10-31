@@ -5,36 +5,61 @@ const send = (msg: JobResponse) => (self as unknown as Worker).postMessage(msg)
 const MAX_SIDE = 12000
 const MAX_PIXELS = 40_000_000 // pagar pengaman memori browser
 
+const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
+
 self.onmessage = async (e: MessageEvent<JobRequest>) => {
-  const { id, file, format, quality, width, height, lockRatio, allowUpscale } = e.data
+  const {
+    id, file, format, quality,
+    width, height, lockRatio, allowUpscale,
+    cropW, cropH, cropX, cropY,
+  } = e.data
   try {
     // 'from-image' menerapkan rotasi EXIF sebelum metadata terbuang
     const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
     const ow = bitmap.width
     const oh = bitmap.height
 
+    // 1) CROP: tentukan area sumber (sx, sy, sw, sh)
+    let sx = 0
+    let sy = 0
+    let sw = ow
+    let sh = oh
+    if (cropW > 0 && cropH > 0) {
+      const r = cropW / cropH
+      if (ow / oh > r) {
+        sh = oh
+        sw = Math.round(oh * r)
+      } else {
+        sw = ow
+        sh = Math.round(ow / r)
+      }
+      sw = clamp(sw, 1, ow)
+      sh = clamp(sh, 1, oh)
+      sx = Math.round(((ow - sw) * clamp(cropX, 0, 100)) / 100)
+      sy = Math.round(((oh - sh) * clamp(cropY, 0, 100)) / 100)
+    }
+
+    // 2) RESIZE: dihitung dari ukuran SETELAH crop
     const tw = width > 0 ? width : 0
     const th = height > 0 ? height : 0
-    let w = ow
-    let h = oh
+    let w = sw
+    let h = sh
 
     if (tw || th) {
       if (lockRatio || !(tw && th)) {
-        // Rasio asli dipertahankan
         let scale: number
-        if (tw && th) scale = Math.min(tw / ow, th / oh) // muat di dalam kotak
-        else if (tw) scale = tw / ow
-        else scale = th / oh
+        if (tw && th) scale = Math.min(tw / sw, th / sh)
+        else if (tw) scale = tw / sw
+        else scale = th / sh
         if (!allowUpscale) scale = Math.min(scale, 1)
-        w = Math.round(ow * scale)
-        h = Math.round(oh * scale)
+        w = Math.round(sw * scale)
+        h = Math.round(sh * scale)
       } else {
-        // Rasio bebas: pakai ukuran persis (gambar bisa terlihat melar)
         w = tw
         h = th
         if (!allowUpscale) {
-          w = Math.min(w, ow)
-          h = Math.min(h, oh)
+          w = Math.min(w, sw)
+          h = Math.min(h, sh)
         }
       }
     }
@@ -55,7 +80,7 @@ self.onmessage = async (e: MessageEvent<JobRequest>) => {
       ctx.fillStyle = '#ffffff'
       ctx.fillRect(0, 0, w, h)
     }
-    ctx.drawImage(bitmap, 0, 0, w, h)
+    ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, w, h)
     bitmap.close()
 
     const blob = await canvas.convertToBlob({ type: format, quality: quality / 100 })
