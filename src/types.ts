@@ -9,6 +9,10 @@ export interface JobRequest {
   height: number // 0 = otomatis
   lockRatio: boolean
   allowUpscale: boolean
+  cropW: number // rasio crop (0 = tanpa crop)
+  cropH: number
+  cropX: number // posisi 0-100 (50 = tengah)
+  cropY: number
 }
 
 export type JobResponse =
