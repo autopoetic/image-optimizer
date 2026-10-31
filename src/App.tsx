@@ -1,10 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ChangeEvent, DragEvent } from 'react'
+import type { ChangeEvent, CSSProperties, DragEvent } from 'react'
 import type { Item, JobRequest, JobResponse, OutFormat } from './types'
 
 const MAX_FILES = 30
 const MAX_BYTES = 30 * 1024 * 1024
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
+
+const CROPS = [
+  { key: 'none', label: 'Tanpa crop', w: 0, h: 0 },
+  { key: '1:1', label: '1:1', w: 1, h: 1 },
+  { key: '4:3', label: '4:3', w: 4, h: 3 },
+  { key: '3:4', label: '3:4', w: 3, h: 4 },
+  { key: '3:2', label: '3:2', w: 3, h: 2 },
+  { key: '16:9', label: '16:9', w: 16, h: 9 },
+  { key: '9:16', label: '9:16', w: 9, h: 16 },
+  { key: 'custom', label: 'Kustom', w: 0, h: 0 },
+]
 
 const fmtSize = (n: number) =>
   n >= 1048576 ? `${(n / 1048576).toFixed(2)} MB` : `${(n / 1024).toFixed(1)} KB`
@@ -27,6 +38,11 @@ export default function App() {
   const [height, setHeight] = useState(0)
   const [lockRatio, setLockRatio] = useState(true)
   const [allowUpscale, setAllowUpscale] = useState(false)
+  const [cropKey, setCropKey] = useState('none')
+  const [customW, setCustomW] = useState(1)
+  const [customH, setCustomH] = useState(1)
+  const [cropX, setCropX] = useState(50)
+  const [cropY, setCropY] = useState(50)
   const [busy, setBusy] = useState(false)
   const [drag, setDrag] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -35,6 +51,24 @@ export default function App() {
   useEffect(() => {
     return () => urlsRef.current.forEach((u) => URL.revokeObjectURL(u))
   }, [])
+
+  // Rasio crop yang aktif (0 = tanpa crop)
+  const preset = CROPS.find((c) => c.key === cropKey)
+  const rw = cropKey === 'custom' ? customW : (preset?.w ?? 0)
+  const rh = cropKey === 'custom' ? customH : (preset?.h ?? 0)
+  const cropActive = rw > 0 && rh > 0
+
+  function cropPreviewStyle(): CSSProperties {
+    const box = 72
+    const w = rw >= rh ? box : Math.max(20, Math.round((box * rw) / rh))
+    const h = rw >= rh ? Math.max(20, Math.round((box * rh) / rw)) : box
+    return {
+      width: w,
+      height: h,
+      objectFit: 'cover',
+      objectPosition: `${cropX}% ${cropY}%`,
+    }
+  }
 
   function addFiles(list: FileList | null) {
     if (!list) return
@@ -87,6 +121,10 @@ export default function App() {
         height,
         lockRatio,
         allowUpscale,
+        cropW: cropActive ? rw : 0,
+        cropH: cropActive ? rh : 0,
+        cropX,
+        cropY,
       })
       if (res.ok) {
         const url = URL.createObjectURL(res.blob)
@@ -150,9 +188,7 @@ export default function App() {
         </a>
       </header>
       <h1>Image Optimizer</h1>
-    
-      
-      <p>Kompres dan ubah ukuran gambar langsung di browser. Gambar tidak dikirim ke server mana pun.</p>
+      <p>Kompres, potong, dan ubah ukuran gambar langsung di browser. Gambar tidak dikirim ke server mana pun.</p>
 
       <div
         className={`drop ${drag ? 'drag' : ''}`}
@@ -177,6 +213,89 @@ export default function App() {
           onChange={onPick}
         />
       </div>
+
+      <fieldset className="panel">
+        <legend>Potong (Crop)</legend>
+        <div className="row">
+          {CROPS.map((c) => (
+            <button
+              key={c.key}
+              className={`ghost ${cropKey === c.key ? 'active' : ''}`}
+              onClick={() => setCropKey(c.key)}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+        {cropKey === 'custom' && (
+          <div className="row">
+            <label>
+              Rasio lebar{' '}
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={customW || ''}
+                onChange={(e) => setCustomW(Math.min(100, toNum(e.target.value)))}
+              />
+            </label>
+            <span className="times">:</span>
+            <label>
+              tinggi{' '}
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={customH || ''}
+                onChange={(e) => setCustomH(Math.min(100, toNum(e.target.value)))}
+              />
+            </label>
+          </div>
+        )}
+        {cropActive && (
+          <>
+            <div className="row">
+              <label className="slider">
+                Posisi horizontal {cropX}%{' '}
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={cropX}
+                  onChange={(e) => setCropX(Number(e.target.value))}
+                />
+              </label>
+              <label className="slider">
+                Posisi vertikal {cropY}%{' '}
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={cropY}
+                  onChange={(e) => setCropY(Number(e.target.value))}
+                />
+              </label>
+              <button
+                className="ghost"
+                onClick={() => {
+                  setCropX(50)
+                  setCropY(50)
+                }}
+              >
+                Tengah
+              </button>
+            </div>
+            <div className="muted">
+              Gambar dipotong ke rasio {rw}:{rh}. Geser slider untuk memilih bagian yang
+              dipertahankan (kiri/kanan atau atas/bawah). Hanya sisi yang dipotong yang
+              berpengaruh. Lihat pratinjau &quot;Potong&quot; pada tabel.
+            </div>
+          </>
+        )}
+        {!cropActive && (
+          <div className="muted">Pilih rasio untuk memotong. &quot;Tanpa crop&quot; = gambar utuh.</div>
+        )}
+      </fieldset>
 
       <fieldset className="panel">
         <legend>Ukuran (piksel)</legend>
@@ -233,7 +352,7 @@ export default function App() {
         </div>
         <div className="muted">
           {width === 0 && height === 0
-            ? 'Kosong = ukuran asli dipertahankan.'
+            ? 'Kosong = ukuran asli dipertahankan (setelah crop, jika dipakai).'
             : bothSet && lockRatio
               ? 'Gambar dimuat di dalam kotak ini, rasio tetap.'
               : bothSet && !lockRatio
@@ -291,6 +410,16 @@ export default function App() {
                         <img src={it.previewUrl} alt={`Asli: ${it.file.name}`} />
                         <figcaption>Asli</figcaption>
                       </figure>
+                      {cropActive && (
+                        <figure>
+                          <img
+                            src={it.previewUrl}
+                            alt={`Area potong: ${it.file.name}`}
+                            style={cropPreviewStyle()}
+                          />
+                          <figcaption>Potong</figcaption>
+                        </figure>
+                      )}
                       {it.status === 'done' && it.url && (
                         <figure>
                           <img src={it.url} alt={`Hasil: ${it.outName ?? it.file.name}`} />
